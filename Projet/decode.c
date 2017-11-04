@@ -38,18 +38,19 @@ void usage(char **argv) {
  * @param argv program's command line arguments
  */
 int main(int argc, char **argv) {
-	char *input, *output;
-	//enum PPM_TYPE type;
+	char *input = NULL;
+	char *output = NULL;
+	enum PPM_TYPE type;
 	int m = 0, f = 0;
 
 	// Parse command line
 	if (argc == 3) {
-		//type = PPM_BINARY;
+		type = PPM_BINARY;
 		input = argv[1];
 		output = argv[2];
 	} else if (argc ==  4) {
 		if (strcmp("-ascii", argv[1]) != 0) usage(argv);
-		//type = PPM_ASCII;
+		type = PPM_ASCII;
 		input = argv[2];
 		output = argv[3];
 	} else {

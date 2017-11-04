@@ -110,7 +110,7 @@ void ecritureRGB(unsigned char *fichier,unsigned char *r, unsigned char *g, unsi
 long sizeFile(char *nom)
 {
     FILE *fichier;
-    long size;
+    long size = 0;
 
     fichier=fopen(nom,"rb");
 
@@ -120,5 +120,8 @@ long sizeFile(char *nom)
             size=ftell(fichier);
             fclose (fichier);
     }
+		else
+			printf("Fichier non chargé\n");
+
     return size;
 }

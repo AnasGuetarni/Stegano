@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <math.h>
 
-#define NUM_THREADS 50
+#define NUM_THREADS 20
 #define BITS_PER_CHAR 7
 
 /**
@@ -54,6 +54,25 @@ unsigned long fsize(char* file)
     unsigned long len = (unsigned long)ftell(f);
     fclose(f);
     return len;
+}
+
+int add_pow_2(uint8_t *ptr, int exp)
+{
+	return (*ptr % 2) * pow(2, exp);
+}
+
+int get_nb_char_img(img_t *img)
+{
+	uint8_t *test_rgb = &img->raw[0].r;
+	int nb_char=0, count=0;
+
+	for (int i = sizeof(int)*8-1; i >= 0; i--)
+	{
+		nb_char += add_pow_2(test_rgb+i, count);
+		count++;
+	}
+
+	return nb_char;
 }
 
 int main(int argc, char **argv) {
@@ -93,38 +112,47 @@ int main(int argc, char **argv) {
 
 	img_t *img;
 	img = load_ppm(input);
+	int nb_char = get_nb_char_img(img);
 	int max_char = max_char_encode(img);
-	printf("max_char: %i\n", max_char);
-	int nb_char = fsize(fileInput);
-	printf("nb_char: %i\n", nb_char);
+	long size = sizeFile(fileInput);
+	int reste = 0;
+	int old = 7;
+	bool end = false;
+
+	pthread_t *threads = malloc(sizeof(pthread_t) * NUM_THREADS);//(pthread_t*)malloc(sizeof(pthread_t)); //malloc(sizeof(pthread_t) * nb_threads);
+	param_t *threads_param = malloc(sizeof(param_t) * NUM_THREADS);//(param_t*)malloc(sizeof(param_t));//malloc(sizeof(param_t) * nb_threads);
+
+	if (!img) {
+		fprintf(stderr, "Failed loading \"%s\"!\n", input); // Si l'on arrive pas a charger l'image
+		return EXIT_FAILURE; // On retourne une erreur
+	}
 
 	if (nb_char > max_char){
 		printf("Fichier texte trop long pour l'image\n");
 		exit(0);
 	}
 
-	long size = sizeFile(fileInput);
 
 	double value = size / NUM_THREADS;
-	printf("Size: %lu\n", size);
 	printf("La valeur pour chaque thread est de: %f\n",value);
 
+	// BOUCLE SUR LES threads
+	// Création des intervalles
 	for(int i=1;i<NUM_THREADS+1;i++){
 		if(i==1)
 			intervalleT.intervalMin[i] = value * (i-1);
 		else
 			intervalleT.intervalMin[i] = value * (i-1) + 1;
+
 		intervalleT.intervalMax[i] = value * i;
+
+		if (i==NUM_THREADS){
+				reste = size - intervalleT.intervalMax[i];
+				intervalleT.intervalMax[i] += reste;
+		}
+
 		printf("intervalMin: %i / intervalMax: %i\n",intervalleT.intervalMin[i],intervalleT.intervalMax[i]);
 	}
-
-	//printf("En dehors de la boucle\n");
-	//printf("Valeur de intervalMin: %i\n", intervalleT.intervalMin[0]);
-
-
-	//pthread_t threads[NUM_THREADS];
-	pthread_t *threads = malloc(sizeof(pthread_t) * NUM_THREADS);//(pthread_t*)malloc(sizeof(pthread_t)); //malloc(sizeof(pthread_t) * nb_threads);
-	param_t *threads_param = malloc(sizeof(param_t) * NUM_THREADS);//(param_t*)malloc(sizeof(param_t));//malloc(sizeof(param_t) * nb_threads);
 
 	//int tab[NUM_THREADS];
 	for (int i = 0; i < NUM_THREADS; i++) {
@@ -143,6 +171,31 @@ int main(int argc, char **argv) {
     }
     pthread_exit(NULL);
     return EXIT_SUCCESS;
+
+		// BOUCLE THREAD
+
+		// for (int i = 0; i < nb_threads; i++)
+		// {
+		// 	int min = round(interval * i) + 0;
+		// 	int max = round(interval * (i + 1)) - 1;
+		// 	int char_in_interval = max + 1 - min;
+		//
+		// 	if (char_in_interval > 0)
+		// 	{
+		// 		threads_param[count_thread].limit = get_limits(min);
+		// 		threads_param[count_thread].char_interval = char_in_interval;
+		// 		threads_param[count_thread].img = img;
+		//
+		// 		int code = pthread_create(&threads[count_thread], NULL, thread, &threads_param[count_thread]);
+		//
+		// 		if (code != 0){
+		//             fprintf(stderr, "pthread_create failed!\n");
+		//             exit(0);
+		// 		}
+		//
+		// 		count_thread++;
+		// 	}
+		// }
 
 
 
@@ -169,9 +222,6 @@ int main(int argc, char **argv) {
 		// On va alors extraire les caractères du fichier
     extractionFichier(fichier);
 
-int old = 7;
-bool end = false;
-
 	// On parcours toute l'image et applique la fonction ecritureRGB
 	for (int j = 0; j < img->height && end != true; j++) { // On parcours l'image sur la hauteur
 		for (int i = 0; i < img->width && end != true; i++) { // On parcours l'image dans sa largeur
@@ -197,7 +247,6 @@ bool end = false;
 		return EXIT_FAILURE; // On retourne une erreur
 	}
 
-	// Si l'on arrive a écrire sur l'image
 	free_img(img); // On libere l'espace alloué à l'image
 	return EXIT_SUCCESS; // On retourne un succès
 }
