@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
 	int nb_char = get_nb_char_img(img);
 	int max_char = max_char_encode(img);
 	long size = sizeFile(fileInput);
+	double value = size / NUM_THREADS;
 	int reste = 0;
 	int old = 7;
 	bool end = false;
@@ -132,8 +133,6 @@ int main(int argc, char **argv) {
 		exit(0);
 	}
 
-
-	double value = size / NUM_THREADS;
 	printf("La valeur pour chaque thread est de: %f\n",value);
 
 	// BOUCLE SUR LES threads
@@ -197,20 +196,6 @@ int main(int argc, char **argv) {
 		// 	}
 		// }
 
-
-
-	// Load image
-	//img_t *img = load_ppm(input);
-	if (!img) {
-		fprintf(stderr, "Failed loading \"%s\"!\n", input); // Si l'on arrive pas a charger l'image
-		return EXIT_FAILURE; // On retourne une erreur
-	}
-
-	// On affiche la taille de l'image
-	printf("Height: %d\n", img->height);
-	printf("Width: %d\n", img->width);
-
-	printf("taille :  %ld \n", size);
 
 	unsigned char *fichier = NULL;
 	fichier = malloc(size*sizeof(unsigned char));
