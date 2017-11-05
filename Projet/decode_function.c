@@ -3,72 +3,72 @@
 #include <string.h>
 #include "decode_function.h"
 
-// Cette fonction remplace par 0 ou par 1 le bit de poids faible dans
-// un nombre binaire donnée
-// nb : nombre binaire , bits: 0 ou 1
+// This fonction replace the last significate bit by 0 or 1 for given binary number
+// nb : binary number , bits: 0 or 1
 void bitChange(unsigned char *tabCarac, int bits, int rang, int f)
 {
 	unsigned char un[7] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40}; // 0000 0001(2)
 	unsigned char ze[7] = {0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF}; // 1111 1110(2)
 
 	if (bits)
-		// met a 1 le bit de rang n
-		tabCarac[f] = (tabCarac[f])|(un[rang]); // opérateur OU
+		// Set the rank n bit to 1
+		tabCarac[f] = (tabCarac[f])|(un[rang]); // Logical operator OR
 	else
-		// met a 0 le bit de rang n
-		tabCarac[f] = (tabCarac[f])&(ze[rang]); // opérateur ET
+		// Set the rank n bit to 0
+		tabCarac[f] = (tabCarac[f])&(ze[rang]); // Logical operator AND
 }
 
 void lectureRGB(unsigned char *tabCarac,unsigned char *r, unsigned char *g, unsigned char *b, int *m, int *f)
 {
-	// masque pour extraire les bits des valeurs RGB une par une  UTILISATION D'UN (ET) LOGIQUE
-	// Ces masques serviront a extraire chaque bits d'un caractère
+	// mask to extract bits from RGB values one by one (use AND operator)
+	// These masks will be used to extract each bits of a character
 	unsigned char masq = 0x01;
 
 	int bits=0;
-	
+
 	if (*f < 708064)
 	{
-		if (*m == 7) // On a extrait les 7 bits du caractère
+				// *********************************************    R    *************************************************************
+		if (*m == 7) // We extracted the 7 bits of the character
 		{
 			*m = 0;
-			*f = *f + 1; // on passe au caractère suivant
+			*f = *f + 1; // Move to the next character
 		}
-		
-		if ((masq & *r) != 0)// si le nombre vaut une valeure différente de zero c'est que le bits restant vaut 1
-			bits = 1;
-		else // si tous les bits sont a zero c'est que le bits rechercher vaut 0
-			bits = 0;
-	
-		// On enregistre le bit 2^m dans le tableau tabCarac
-		bitChange(tabCarac, bits, *m, *f);
-		*m = *m + 1;
-	//*******************************************************************************************************************
-		if (*m == 7) // On a extrait les 7 bits du caractère
-		{
-			*m = 0;
-			*f = *f + 1; // on passe au caractère suivant
-		}
-		if ((masq & *g) != 0)// si le nombre vaut une valeure différente de zero c'est que le bits restant vaut 1
+
+		if ((masq & *r) != 0)// if the number != 0 it means that the remaining bit is 1
 			bits = 1;
 		else
 			bits = 0;
-	
-		// On enregistre le bit 2^m dans le tableau tabCarac
+
+		// We record the bit 2 ^ m in the tabCarac table
 		bitChange(tabCarac, bits, *m, *f);
 		*m = *m + 1;
-	//*******************************************************************************************************************
-		if (*m == 7) // On a extrait les 7 bits du caractère
+	//*************************************************    G   ************************************************************
+		if (*m == 7) // We extracted the 7 bits of the character
 		{
 			*m = 0;
-			*f = *f + 1; // on passe au caractère suivant
+			*f = *f + 1; // Move to the next character
 		}
-		if ((masq & *b) != 0)// si le nombre vaut une valeure différente de zero c'est que le bits restant vaut 1
+		if ((masq & *g) != 0)// if the number != 0 it means that the remaining bit is 1
+			bits = 1;
+		else
+			bits = 0;
+
+		// We record the bit 2 ^ m in the tabCarac table
+		bitChange(tabCarac, bits, *m, *f);
+		*m = *m + 1;
+	//********************************************************    B    ***********************************************************
+		if (*m == 7)  // We extracted the 7 bits of the character
+		{
+			*m = 0;
+			*f = *f + 1; // Move to the next character
+		}
+		if ((masq & *b) != 0)// if the number != 0 it means that the remaining bit is 1
 	            bits = 1;
 	    else
 	            bits = 0;
-		
-		// On enregistre le bit 2^m dans le tableau tabCarac
+
+		//  We record the bit 2 ^ m in the tabCarac table
 		bitChange(tabCarac, bits, *m, *f);
 		*m = *m + 1;
 	}
@@ -92,9 +92,9 @@ void writeFile(unsigned char *tabCarac, char *output)
     }
 	else
     {
-        // On affiche un message d'erreur si on veut
-        printf("Impossible d'ouvrir le fichier output.txt"); //A MODIFIER L AFFICHAGE
+        // we get an error message
+        printf("Can not open output.txt file"); 
     }
 
-	fclose(fichier); // On ferme le fichier qui a été ouvert
+	fclose(fichier); // Close the file that was opened
 }

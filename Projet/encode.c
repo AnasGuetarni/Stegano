@@ -67,17 +67,16 @@ void *thread(void *para) {
 				int m = p->m;
 				int f = p->f;
 
-				// printf("size : %ld\n", size);
-				// printf("fichier: %s\n", fichier);
-				 printf("id: %i\n", id);
-				// printf("Intervalle min: %d\n", intervalMin);
-				// printf("Intervalle max: %d\n", intervalMax);
-				// printf("\n");
+        /*printf("size : %ld\n", size);
+				printf("fichier : %s\n", fichier);*/
+				printf("id: %i\n", id);
+				/*printf("Interval min: %d\n", intervalMin);
+				printf("Interval max: %d\n", intervalMax);*/
 
-				for (int j = intervalMin; j < intervalMax; j++) { // On parcours l'image sur la hauteur
-					for (int i = intervalMin; i < intervalMax; i++) { // On parcours l'image dans sa largeur
-						pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
-						ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
+				for (int j = intervalMin; j < intervalMax; j++) { // We are looking at picture on the height
+					for (int i = intervalMin; i < intervalMax; i++) { // We are looking at picture on the width
+						pixel_t *p = &img->pix[j][i]; // we place pixels values in a structure
+							ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // we encode the file
 					}
 				}
 
@@ -128,7 +127,7 @@ int main(int argc, char **argv) {
 
 	if (argc > 5)
 	{
-		printf("Le nombre d'argument est supérieur au nombre demandé\n");
+				printf("The number of arguments is greater than the requested number\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -150,19 +149,19 @@ int main(int argc, char **argv) {
 	int count_thread=0;
 
 	if (!img) {
-		fprintf(stderr, "Failed loading \"%s\"!\n", input); // Si l'on arrive pas a charger l'image
-		return EXIT_FAILURE; // On retourne une erreur
+			fprintf(stderr, "Failed loading \"%s\"!\n", input); // if we can't load the picture
+		return EXIT_FAILURE; // return error
 	}
 
 	if (nb_char > max_char){
-		printf("Fichier texte trop long pour l'image\n");
+			printf("Text file too long for the image\n");
 		exit(0);
 	}
 
-	printf("La valeur pour chaque thread est de: %f\n",value);
+		printf("The value for each thread  : %f\n",value);
 
-	// BOUCLE SUR LES threads
-	// Création des intervalles
+    // loop on threads
+  	//  creating intervals
 	for(int i=1;i<NUM_THREADS+1;i++){
 		if(i==1)
 			intervalleT.intervalMin[i] = value * (i-1);
@@ -181,12 +180,12 @@ int main(int argc, char **argv) {
 
 	unsigned char *fichier = NULL;
 	fichier = malloc(size*sizeof(unsigned char));
-    if (fichier == NULL) // Si l'allocation a échoué
+    if (fichier == NULL) // if allocation fail
     {
-        exit(0); // On arrête immédiatement le programme
+        exit(0); // we stop the program
     }
 
-		// On va alors extraire les caractères du fichier
+		// We will extract the characters from the file
     extractionFichier(fichier);
 
 		// BOUCLE THREAD
@@ -226,31 +225,33 @@ int main(int argc, char **argv) {
         pthread_join(threads[i], NULL);
     }
 
-	// On parcours toute l'image et applique la fonction ecritureRGB
-	// for (int j = 0; j < img->height && end != true; j++) { // On parcours l'image sur la hauteur
-	// 	for (int i = 0; i < img->width && end != true; i++) { // On parcours l'image dans sa largeur
-	// 		pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
-	// 		if (m != old)
-	// 		{
-	// 			old = m;
-	// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
-	// 		}
-	// 		else
-	// 		{
-	// 			end = true;
-	// 		}
-	// 	}
-	// }
 
-	free(fichier); // On libère le fichier
 
-	// Write image
+    	// We go through the entire image and apply the function ecritureRGB
+    	// for (int j = 0; j < img->height && end != true; j++) { //  We are looking at picture on the height
+    	// 	for (int i = 0; i < img->width && end != true; i++) { // We are looking at picture on the width
+    	// 		pixel_t *p = &img->pix[j][i]; // we place pixels values in a structure
+    	// 		if (m != old)
+    	// 		{
+    	// 			old = m;
+    	// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size);
+    	// 		}
+    	// 		else
+    	// 		{
+    	// 			end = true;
+    	// 		}
+    	// 	}
+    	// }
+
+	free(fichier); // free file
+
+  // Write image
 	if (!write_ppm(output, img, type)) {
-		fprintf(stderr, "Failed writing \"%s\"!\n", output); // Si l'on arrive pas a écrire sur l'image
-		free_img(img); // On libere l'espace alloué a l'image
-		return EXIT_FAILURE; // On retourne une erreur
+		fprintf(stderr, "Failed writing \"%s\"!\n", output); // if we can't write on in the picture
+		free_img(img); // We free space allocated to the image
+		return EXIT_FAILURE; // return error
 	}
 
-	free_img(img); // On libere l'espace alloué à l'image
-	return EXIT_SUCCESS; // On retourne un succès
+	free_img(img); // We free space allocated to the image
+	return EXIT_SUCCESS; // Return success
 }

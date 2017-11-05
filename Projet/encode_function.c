@@ -3,9 +3,8 @@
 #include <string.h>
 #include "encode_function.h"
 
-// Cette fonction remplace par 0 ou par 1 le bit de poids faible dans
-// un nombre binaire donnée
-// nb : nombre binaire , bits: 0 ou 1
+// This fonction replace the last significate bit by 1 or 0 for given binary number
+// nb : binary number , bits: 0 or 1
 unsigned char bitFaible(unsigned char nb, int bits)
 {
 	unsigned char resultat = 0x00;
@@ -13,16 +12,16 @@ unsigned char bitFaible(unsigned char nb, int bits)
 	unsigned char ze = 0xFE; // 1111 1110(2)
 
 	if (bits)
-		// met a 1 le bit de poids faible
-		resultat = nb | un; // opérateur OU
+		// set the last significate bit at 1
+		resultat = nb | un; // Logical operator OR
 	else
-		// met a 0 le bit de poids faible
-		resultat = nb & ze; // opérateur ET
+		// set the last significate bit at 0
+		resultat = nb & ze; // Logical operator AND
 
     return resultat;
 }
 
-// ouverture fichier + extraction
+// opening file + extraction
 void extractionFichier(unsigned char *c)
 {
 	int i =0;
@@ -41,8 +40,8 @@ void extractionFichier(unsigned char *c)
     }
     else
     {
-        // On affiche un message d'erreur
-        printf("Impossible d'ouvrir le fichier gulliver.txt");
+			// display error message
+			printf("Can not open file gulliver.txt");
     }
 
 	fclose(fichier);
@@ -50,62 +49,63 @@ void extractionFichier(unsigned char *c)
 
 void ecritureRGB(unsigned char *fichier,unsigned char *r, unsigned char *g, unsigned char *b, int *m, int *f, long taille)
 {
-	// masque pour extraire les bits des valeurs RGB une par une  UTILISATION D'UN (ET) LOGIQUE
-	// Ces masques serviront a extraire chaque bits d'un caractère
+	// mask to extract bits from RGB values ​​one by one (logical operateur AND)
+	// These masks will be used to extract each bits of a character
 	unsigned char masq[7] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40};
 
-	// On considére que le bits 2^0 du caractére ira en premier dans le bit de poids faible de R. L'ordre est le suivant R->G->B
+	// It is considered that bit 2 ^ 0 of the character will go first in the last significate bit of R. The order is R-> G-> B
 	int bits=0;
 
 	//printf("m : %d, f : %d \n", *m, *f);
 
-	// Test qui permet d'arréter l'encodage quand tous les cartère on été encodé
+
 	if(*f < taille)
-	{
-		/*-------------------------------------------*/
-		if (*m == 7) // On a encoder les 7 bits du caractère
 		{
-			*m = 0;
-			*f = *f + 1; // on passe au caractère suivant
-		}
-		if ((masq[*m]&fichier[*f]) != 0)// si le nombre vaut une valeure différente de zero c'est que le bits restant vaut 1
-			bits = 1;
-		else // si tous les bits sont a zero c'est que le bits rechercher vaut 0
-			bits = 0;
+					/*--------------------- R  ---------------------*/
+					if (*m == 7) // We encode the 7 bits of the character
+					{
+						*m = 0;
+						*f = *f + 1; // we move on to the next character
+					}
+					if ((masq[*m]&fichier[*f]) != 0)// if the number != 0 it means that the remaining bit is 1
+						bits = 1;
+					else
+						bits = 0;
 
-		// On enregistre le bit 2^0 du caractère dans le nombre binaire R (RGB)
-		*r = bitFaible(*r,bits);
-		*m = *m + 1;
+					// We save the bit 2 ^ 0 of the character in the R binary number (RGB)
+					*r = bitFaible(*r,bits);
+					*m = *m + 1;
 
-		/*---------------------------------------------*/
-		if (*m == 7) // On a encoder les 7 bits du caractère
-		{
-			*m = 0;
-			*f = *f + 1; // on passe au caractère suivant
-		}
-		if ((masq[*m]&fichier[*f]) != 0)// si le nombre vaut une valeure différente de zero c'est que le bits restant vaut 1
-			bits = 1;
-		else
-			bits = 0;
+					/*----------------------  G  -----------------------*/
+					if (*m == 7) // We encode the 7 bits of the character
+					{
+						*m = 0;
+						*f = *f + 1; // we move on to the next character
+					}
+					if ((masq[*m]&fichier[*f]) != 0)// if the number != 0 it means that the remaining bit is 1
+						bits = 1;
+					else
+						bits = 0;
 
-		*g = bitFaible(*g,bits);
-		*m = *m + 1;
+					*g = bitFaible(*g,bits);
+					*m = *m + 1;
 
-		/*----------------------------------------*/
-		if (*m == 7) // On a encoder les 7 bits du caractère
-		{
-			*m = 0;
-			*f = *f + 1; // on passe au caractère suivant
-		}
-		if ((masq[*m]&fichier[*f]) != 0)// si le nombre vaut une valeure différente de zero c'est que le bits restant vaut 1
-	            bits = 1;
-	    else
-	            bits = 0;
+					/*--------------------  B   --------------------*/
+					if (*m == 7) //  We encode the 7 bits of the character
+					{
+						*m = 0;
+						*f = *f + 1; //  we move on to the next character
+					}
+					if ((masq[*m]&fichier[*f]) != 0)// if the number != 0 it means that the remaining bit is 1
+										bits = 1;
+						else
+										bits = 0;
 
-		*b = bitFaible(*b,bits);
-		*m = *m + 1;
-	}
-}
+					*b = bitFaible(*b,bits);
+					*m = *m + 1;
+					}
+				}
+
 
 long sizeFile(char *nom)
 {
@@ -121,7 +121,7 @@ long sizeFile(char *nom)
             fclose (fichier);
     }
 		else
-			printf("Fichier non chargé\n");
+					printf("File not loaded\n");
 
     return size;
 }

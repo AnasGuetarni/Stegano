@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
 	// Load image
 	img_t *img = load_ppm(input);
 	if (!img) {
-		fprintf(stderr, "Failed loading \"%s\"!\n", input); // Si l'on arrive pas a charger l'image
-		return EXIT_FAILURE; // On retourne une erreur
+		fprintf(stderr, "Failed loading \"%s\"!\n", input); // if we can't load picture
+		return EXIT_FAILURE;  // return error
 	}
 
 	// On affiche la taille de l'image
@@ -70,23 +70,23 @@ int main(int argc, char **argv) {
 
 	unsigned char *caracExtrait = NULL;
 	caracExtrait = malloc(708064*sizeof(unsigned char));
-    if (caracExtrait == NULL) // Si l'allocation a échoué
+    if (caracExtrait == NULL) // If the allocation failed
     {
-        exit(0); // On arrête immédiatement le programme
+        exit(0);  // We stop the program
     }
 
-	// On parcours toute l'image et applique la fonction ecritureRGB
-	for (int j = 0; j < img->height; j++) { // On parcours l'image sur la hauteur
-		for (int i = 0; i < img->width; i++) { // On parcours l'image dans sa largeur
-			pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
+	// We go through the entire image and apply the function ecritureRGB
+	for (int j = 0; j < img->height; j++) { // We are looking at picture on the height
+		for (int i = 0; i < img->width; i++) { // We are looking at picture on the width
+			pixel_t *p = &img->pix[j][i]; // we place pixels values in a structure
 			lectureRGB(caracExtrait, &p->r, &p->g, &p->b, &m, &f);
 		}
 	}
 
 	writeFile(caracExtrait, output);
 
-	free(caracExtrait); // On libère le fichier
-	free_img(img); // On libere l'espace alloué à l'image
+	free(caracExtrait); // the file is released
+	free_img(img); // We free space allocated to the image
 
-	return EXIT_SUCCESS; // On retourne un succès
+	return EXIT_SUCCESS; // return success
 }
