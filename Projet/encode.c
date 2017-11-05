@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <math.h>
 
-#define NUM_THREADS 20
+#define NUM_THREADS 10
 #define BITS_PER_CHAR 7
 
 /**
@@ -33,13 +33,17 @@
  typedef struct intervalle_st {
 	 int intervalMin[NUM_THREADS];
 	 int intervalMax[NUM_THREADS];
-	 img_t **img_out;
  } interval_t;
 
  typedef struct param_st {
+	 int intervalMin;
+	 int intervalMax;
 	 int thread_id;
-	 char *text_cut;
-	 img_t **img_out;
+	//  char *text_cut;
+	 int m,f;
+	 unsigned char *fichier;
+	 long size;
+	 img_t *img;
  } param_t;
 
  param_t paramT;
@@ -54,12 +58,24 @@ void usage(char **argv) {
 
 void *thread(void *para) {
 				param_t *p = (param_t *)para;
-				int id;
+				img_t *img = p->img;
+				int id = p->thread_id;
+				int intervalMin = p->intervalMin;
+				int intervalMax = p->intervalMax;
+				long size = p->size;
+				unsigned char *fichier = p->fichier;
+				int m = p->m;
+				int f = p->f;
 
-				//for (int i=0;i<p->thread_id[NUM_THREADS];i++){
-					id = p->thread_id;
-					//printf("thread id: %i\n", p->thread_id[i]);
-				//}
+				printf("Intervalle min: %d\n", intervalMin);
+				printf("Intervalle max: %d\n", intervalMax);
+
+				for (int j = intervalMin; j < intervalMax; j++) { // On parcours l'image sur la hauteur
+					for (int i = intervalMin; i < intervalMax; i++) { // On parcours l'image dans sa largeur
+						pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
+							ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
+					}
+				}
 
         printf("Hello from thread %d\n", id);
         return NULL;
@@ -102,7 +118,7 @@ int main(int argc, char **argv) {
 	char *nbT;
 	char *fileInput;
 	enum PPM_TYPE type;
-	//int m = 0, f = 0;
+	int m = 0, f = 0;
 
 	if (argc > 5)
 	{
@@ -125,6 +141,7 @@ int main(int argc, char **argv) {
 	long size = sizeFile(fileInput);
 	double value = size / NUM_THREADS;
 	int reste = 0;
+	int count_thread=0;
 
 	if (!img) {
 		fprintf(stderr, "Failed loading \"%s\"!\n", input); // Si l'on arrive pas a charger l'image
@@ -169,27 +186,29 @@ int main(int argc, char **argv) {
 		// BOUCLE THREAD
 		pthread_t *threads = malloc(sizeof(pthread_t) * NUM_THREADS);
 		param_t *threads_param = malloc(sizeof(param_t) * NUM_THREADS);
-		//int old = 7;
-		//bool end = false;
+		// int old = 7;
+		// bool end = false;
+
+		threads_param[count_thread].fichier = fichier;
+		threads_param[count_thread].size = size;
 
 		for (int o = 0; o < NUM_THREADS; o++)
 		{
-				//printf("%i\n",o);
+				threads_param[count_thread].thread_id = o;
+				threads_param[count_thread].intervalMin = intervalleT.intervalMin[o];
+				threads_param[count_thread].intervalMax = intervalleT.intervalMax[o];
+				threads_param[count_thread].img = img;
+				threads_param[count_thread].m = m;
+				threads_param[count_thread].f = f;
 
-				int code = pthread_create(&threads[o], NULL, thread, &threads_param[o]);
-				//printf("%s\n", thread[o]);
-				//printf("Good\n");
-				//printf("%d\n",code);
+				int code = pthread_create(&threads[count_thread], NULL, thread, &threads_param[count_thread]);
 
 				if (code != 0){
 		            fprintf(stderr, "pthread_create failed!\n");
 		            exit(0);
 				}
 
-				//paramT.thread_id[o] = o;
-
-
-			if(pthread_join(threads[o], NULL) != 0) {
+			if(pthread_join(threads[count_thread], NULL) != 0) {
 				 printf("pthread_join\n");
 				 return EXIT_FAILURE;
 			}
@@ -197,10 +216,11 @@ int main(int argc, char **argv) {
 			// for (int j = intervalleT.intervalMin[o]; j < intervalleT.intervalMax[o] && end != true; j++) { // On parcours l'image sur la hauteur
 			// 	for (int i = intervalleT.intervalMin[o]; i < intervalleT.intervalMax[o] && end != true; i++) { // On parcours l'image dans sa largeur
 			// 		pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
-			// 		//printf("%s\n", &p->r);
+			// 		//printf("%hhu\n", p->r);
 			// 		if (m != old)
 			// 		{
 			// 			old = m;
+			// 			// printf("r: %s\n", &p->r);
 			// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
 			// 		}
 			// 		else
@@ -209,10 +229,7 @@ int main(int argc, char **argv) {
 			// 		}
 			// 	}
 			// }
-
-		//
-		// 		count_thread++;
-		//
+			count_thread++;
 		}
 
 
