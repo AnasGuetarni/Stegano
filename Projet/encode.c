@@ -30,6 +30,21 @@
  * @param argv program's command line arguments
  */
 
+ typedef struct intervalle_st {
+	 int intervalMin[NUM_THREADS];
+	 int intervalMax[NUM_THREADS];
+	 img_t **img_out;
+ } interval_t;
+
+ typedef struct param_st {
+	 int thread_id;
+	 char *text_cut;
+	 img_t **img_out;
+ } param_t;
+
+ param_t paramT;
+ interval_t intervalleT;
+
 int convertDecimalToBinary(int n);
 
 void usage(char **argv) {
@@ -37,8 +52,15 @@ void usage(char **argv) {
 	exit(EXIT_FAILURE);
 }
 
-void *thread(void *thread_id) {
-        int id = *((int *) thread_id);
+void *thread(void *para) {
+				param_t *p = (param_t *)para;
+				int id;
+
+				//for (int i=0;i<p->thread_id[NUM_THREADS];i++){
+					id = p->thread_id;
+					//printf("thread id: %i\n", p->thread_id[i]);
+				//}
+
         printf("Hello from thread %d\n", id);
         return NULL;
 }
@@ -80,21 +102,7 @@ int main(int argc, char **argv) {
 	char *nbT;
 	char *fileInput;
 	enum PPM_TYPE type;
-	int m = 0, f = 0;
-
-	typedef struct intervalle_st {
-		int intervalMin[NUM_THREADS];
-		int intervalMax[NUM_THREADS];
-		img_t **img_out;
-	} interval_t;
-
-	typedef struct param_st {
-		int thread_id;
-		char *text_cut;
-		img_t **img_out;
-	} param_t;
-
-	interval_t intervalleT;
+	//int m = 0, f = 0;
 
 	if (argc > 5)
 	{
@@ -117,11 +125,6 @@ int main(int argc, char **argv) {
 	long size = sizeFile(fileInput);
 	double value = size / NUM_THREADS;
 	int reste = 0;
-	int old = 7;
-	bool end = false;
-
-	pthread_t *threads = malloc(sizeof(pthread_t) * NUM_THREADS);//(pthread_t*)malloc(sizeof(pthread_t)); //malloc(sizeof(pthread_t) * nb_threads);
-	param_t *threads_param = malloc(sizeof(param_t) * NUM_THREADS);//(param_t*)malloc(sizeof(param_t));//malloc(sizeof(param_t) * nb_threads);
 
 	if (!img) {
 		fprintf(stderr, "Failed loading \"%s\"!\n", input); // Si l'on arrive pas a charger l'image
@@ -153,50 +156,6 @@ int main(int argc, char **argv) {
 		printf("intervalMin: %i / intervalMax: %i\n",intervalleT.intervalMin[i],intervalleT.intervalMax[i]);
 	}
 
-	//int tab[NUM_THREADS];
-	for (int i = 0; i < NUM_THREADS; i++) {
-	    //tab[i] = i;
-	    int code = pthread_create(&threads[i], NULL, thread, &threads_param[NUM_THREADS]);
-
-			if(pthread_join(threads[i], NULL) != 0) {
-		     printf("pthread_join\n");
-		     return EXIT_FAILURE;
-		  }
-
-	    if (code != 0) {
-        fprintf(stderr, "pthread_create failed!\n");
-        return EXIT_FAILURE;
-	    }
-    }
-    pthread_exit(NULL);
-    return EXIT_SUCCESS;
-
-		// BOUCLE THREAD
-
-		// for (int i = 0; i < nb_threads; i++)
-		// {
-		// 	int min = round(interval * i) + 0;
-		// 	int max = round(interval * (i + 1)) - 1;
-		// 	int char_in_interval = max + 1 - min;
-		//
-		// 	if (char_in_interval > 0)
-		// 	{
-		// 		threads_param[count_thread].limit = get_limits(min);
-		// 		threads_param[count_thread].char_interval = char_in_interval;
-		// 		threads_param[count_thread].img = img;
-		//
-		// 		int code = pthread_create(&threads[count_thread], NULL, thread, &threads_param[count_thread]);
-		//
-		// 		if (code != 0){
-		//             fprintf(stderr, "pthread_create failed!\n");
-		//             exit(0);
-		// 		}
-		//
-		// 		count_thread++;
-		// 	}
-		// }
-
-
 	unsigned char *fichier = NULL;
 	fichier = malloc(size*sizeof(unsigned char));
     if (fichier == NULL) // Si l'allocation a échoué
@@ -207,21 +166,73 @@ int main(int argc, char **argv) {
 		// On va alors extraire les caractères du fichier
     extractionFichier(fichier);
 
-	// On parcours toute l'image et applique la fonction ecritureRGB
-	for (int j = 0; j < img->height && end != true; j++) { // On parcours l'image sur la hauteur
-		for (int i = 0; i < img->width && end != true; i++) { // On parcours l'image dans sa largeur
-			pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
-			if (m != old)
-			{
-				old = m;
-				ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
+		// BOUCLE THREAD
+		pthread_t *threads = malloc(sizeof(pthread_t) * NUM_THREADS);
+		param_t *threads_param = malloc(sizeof(param_t) * NUM_THREADS);
+		//int old = 7;
+		//bool end = false;
+
+		for (int o = 0; o < NUM_THREADS; o++)
+		{
+				//printf("%i\n",o);
+
+				int code = pthread_create(&threads[o], NULL, thread, &threads_param[o]);
+				//printf("%s\n", thread[o]);
+				//printf("Good\n");
+				//printf("%d\n",code);
+
+				if (code != 0){
+		            fprintf(stderr, "pthread_create failed!\n");
+		            exit(0);
+				}
+
+				//paramT.thread_id[o] = o;
+
+
+			if(pthread_join(threads[o], NULL) != 0) {
+				 printf("pthread_join\n");
+				 return EXIT_FAILURE;
 			}
-			else
-			{
-				end = true;
-			}
+
+			// for (int j = intervalleT.intervalMin[o]; j < intervalleT.intervalMax[o] && end != true; j++) { // On parcours l'image sur la hauteur
+			// 	for (int i = intervalleT.intervalMin[o]; i < intervalleT.intervalMax[o] && end != true; i++) { // On parcours l'image dans sa largeur
+			// 		pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
+			// 		//printf("%s\n", &p->r);
+			// 		if (m != old)
+			// 		{
+			// 			old = m;
+			// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
+			// 		}
+			// 		else
+			// 		{
+			// 			end = true;
+			// 		}
+			// 	}
+			// }
+
+		//
+		// 		count_thread++;
+		//
 		}
-	}
+
+
+
+
+	// On parcours toute l'image et applique la fonction ecritureRGB
+	// for (int j = 0; j < img->height && end != true; j++) { // On parcours l'image sur la hauteur
+	// 	for (int i = 0; i < img->width && end != true; i++) { // On parcours l'image dans sa largeur
+	// 		pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
+	// 		if (m != old)
+	// 		{
+	// 			old = m;
+	// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
+	// 		}
+	// 		else
+	// 		{
+	// 			end = true;
+	// 		}
+	// 	}
+	// }
 
 	free(fichier); // On libère le fichier
 
