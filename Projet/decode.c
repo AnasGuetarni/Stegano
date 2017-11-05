@@ -26,9 +26,8 @@
 int convertDecimalToBinary(int n);
 
 void usage(char **argv) {
-	fprintf(stderr, "usage: %s [-ascii] input output\n"\
-			"Where input is a PPM file and output is a text file and the optional argument\n"\
-            "-ascii specifies to write a plain text PPM file.\n", basename(argv[0]));
+	fprintf(stderr, "usage: %s decode image thread_count\n"\
+			"where image is a PPM file containing an encoded secret message and thread_count the number of threads to use.\n"\, basename(argv[0]));
 	exit(EXIT_FAILURE);
 }
 
@@ -63,10 +62,6 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Failed loading \"%s\"!\n", input); // if we can't load picture
 		return EXIT_FAILURE;  // return error
 	}
-
-	// On affiche la taille de l'image
-	/*printf("Height: %d\n", img->height);
-	printf("Width: %d\n", img->width);*/
 
 	unsigned char *caracExtrait = NULL;
 	caracExtrait = malloc(708064*sizeof(unsigned char));

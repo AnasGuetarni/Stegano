@@ -3,7 +3,7 @@
 #include <string.h>
 #include "decode_function.h"
 
-// This fonction replace the last significate bit by 0 or 1 for given binary number
+// This function replaces a bit at rank n given by 0 or 1
 // nb : binary number , bits: 0 or 1
 void bitChange(unsigned char *tabCarac, int bits, int rang, int f)
 {
@@ -93,7 +93,7 @@ void writeFile(unsigned char *tabCarac, char *output)
 	else
     {
         // we get an error message
-        printf("Can not open output.txt file"); 
+        printf("Can not open output.txt file");
     }
 
 	fclose(fichier); // Close the file that was opened
