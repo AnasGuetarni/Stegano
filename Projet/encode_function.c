@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <libgen.h>
+#include <pthread.h>
+#include <errno.h>
+#include <math.h>
 #include "encode_function.h"
 
 // This fonction replace the last significate bit by 1 or 0 for given binary number
@@ -24,7 +29,7 @@ unsigned char bitFaible(unsigned char nb, int bits)
 // opening file + extraction
 void extractionFichier(unsigned char *c)
 {
-	int i =0;
+		int i =0;
     int caractere = 0;
     FILE* fichier = NULL;
     fichier = fopen("gulliver.txt", "r");
@@ -41,7 +46,7 @@ void extractionFichier(unsigned char *c)
     else
     {
 			// display error message
-			printf("Can not open file gulliver.txt");
+			printf("Can not open file.\n");
     }
 
 	fclose(fichier);
@@ -124,4 +129,47 @@ long sizeFile(char *nom)
 					printf("File not loaded\n");
 
     return size;
+}
+
+char *cut_text(char *nom, int min, int max){
+
+  int caractere = 0;
+	FILE *fichier;
+	fichier=fopen(nom,"rb");
+	char *c = malloc(sizeof(char) * (max-min + 1));
+
+  if (nom != NULL)
+  {
+    for(int i = min; i<=max;i++){
+      caractere = fgetc(fichier);
+      if (caractere == EOF){
+        printf("End file: EOF\n");
+				exit(0);
+      }
+      c[i] = caractere;
+    }
+  }
+  else
+  {
+    // display error message
+    printf("Can not open file");
+		exit(0);
+		return NULL;
+  }
+  fclose(fichier);
+  return c;
+}
+
+unsigned long fsize(char* file)
+{
+    FILE * f = fopen(file, "r");
+    fseek(f, 0, SEEK_END);
+    unsigned long len = (unsigned long)ftell(f);
+    fclose(f);
+    return len;
+}
+
+int add_pow_2(uint8_t *ptr, int exp)
+{
+	return (*ptr % 2) * pow(2, exp);
 }

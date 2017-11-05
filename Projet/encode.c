@@ -39,7 +39,7 @@
 	 int intervalMin;
 	 int intervalMax;
 	 int thread_id;
-	//  char *text_cut;
+	 char *text_cut;
 	 int m,f;
 	 unsigned char *fichier;
 	 long size;
@@ -54,6 +54,24 @@ int convertDecimalToBinary(int n);
 void usage(char **argv) {
 	fprintf(stderr, "usage: %s -- encode text_file input_image output_image thread_count where input_image and output_image are PPM files and thread_count the number of threads to use\n", basename(argv[0]));
 	exit(EXIT_FAILURE);
+}
+
+int get_nb_char_img(img_t *img)
+{
+	uint8_t *test_rgb = &img->raw[0].r;
+	int nb_char=0, count=0;
+
+	for (int i = sizeof(int)*8-1; i >= 0; i--)
+	{
+		nb_char += add_pow_2(test_rgb+i, count);
+		count++;
+	}
+
+	return nb_char;
+}
+
+int max_char_encode(img_t *img){
+	return floor((img->height * img->width) * sizeof(pixel_t) / BITS_PER_CHAR);
 }
 
 void *thread(void *para) {
@@ -86,38 +104,6 @@ void *thread(void *para) {
         return NULL;
 }
 
-int max_char_encode(img_t *img){
-	return floor((img->height * img->width) * sizeof(pixel_t) / BITS_PER_CHAR);
-}
-
-unsigned long fsize(char* file)
-{
-    FILE * f = fopen(file, "r");
-    fseek(f, 0, SEEK_END);
-    unsigned long len = (unsigned long)ftell(f);
-    fclose(f);
-    return len;
-}
-
-int add_pow_2(uint8_t *ptr, int exp)
-{
-	return (*ptr % 2) * pow(2, exp);
-}
-
-int get_nb_char_img(img_t *img)
-{
-	uint8_t *test_rgb = &img->raw[0].r;
-	int nb_char=0, count=0;
-
-	for (int i = sizeof(int)*8-1; i >= 0; i--)
-	{
-		nb_char += add_pow_2(test_rgb+i, count);
-		count++;
-	}
-
-	return nb_char;
-}
-
 int main(int argc, char **argv) {
 	char *input, *output;
 	char *nbT;
@@ -147,6 +133,7 @@ int main(int argc, char **argv) {
 	double value = size / NUM_THREADS;
 	int reste = 0;
 	int count_thread=0;
+  char *c = malloc(sizeof(char) * NUM_THREADS);
 
 	if (!img) {
 			fprintf(stderr, "Failed loading \"%s\"!\n", input); // if we can't load the picture
@@ -191,18 +178,31 @@ int main(int argc, char **argv) {
 		// BOUCLE THREAD
 		pthread_t *threads = malloc(sizeof(pthread_t) * NUM_THREADS);
 		param_t *threads_param = malloc(sizeof(param_t) * NUM_THREADS);
-		// int old = 7;
-		// bool end = false;
 
+    // We put into threads_param the different parameters of the structure
 		threads_param[count_thread].fichier = fichier;
 		threads_param[count_thread].size = size;
 		threads_param[count_thread].img = img;
 
+    printf("Avant la boucle\n");
+    printf("c avant le cut: %s\n", c);
+
+    // we loop on the variable "i" and we cut the text in a precise interval linking it to the id of the thread that we insert in "c"
+    for (int i = 0; i < NUM_THREADS; i++) {
+      c[i] = *(cut_text(fileInput,intervalleT.intervalMin[i],intervalleT.intervalMax[i]));
+      printf("c:i = %c\n", c[i]);
+    }
+
+    // We loop on the variable "o" as long as it is less than the number of threads
 		for (int o = 0; o < NUM_THREADS; o++)
 		{
+        printf("o = %i\n", o);
+        printf("Dans l'entree de la boucle\n");
+
 				threads_param[count_thread].thread_id = o;
 				threads_param[count_thread].intervalMin = intervalleT.intervalMin[o];
 				threads_param[count_thread].intervalMax = intervalleT.intervalMax[o];
+        //threads_param[count_thread].text_cut = c[o];
 				threads_param[count_thread].m = m;
 				threads_param[count_thread].f = f;
 
@@ -225,25 +225,10 @@ int main(int argc, char **argv) {
         pthread_join(threads[i], NULL);
     }
 
-
-
-    	// We go through the entire image and apply the function ecritureRGB
-    	// for (int j = 0; j < img->height && end != true; j++) { //  We are looking at picture on the height
-    	// 	for (int i = 0; i < img->width && end != true; i++) { // We are looking at picture on the width
-    	// 		pixel_t *p = &img->pix[j][i]; // we place pixels values in a structure
-    	// 		if (m != old)
-    	// 		{
-    	// 			old = m;
-    	// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size);
-    	// 		}
-    	// 		else
-    	// 		{
-    	// 			end = true;
-    	// 		}
-    	// 	}
-    	// }
-
 	free(fichier); // free file
+  free(c);
+  free(threads);
+  free(threads_param);
 
   // Write image
 	if (!write_ppm(output, img, type)) {
