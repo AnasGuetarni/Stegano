@@ -57,14 +57,13 @@ void usage(char **argv) {
 }
 
 void *thread(void *para) {
-				param_t *p = (param_t *)para;
+				param_t *p = ((param_t *)para);
 				img_t *img = p->img;
 				int id = p->thread_id;
 				int intervalMin = p->intervalMin;
 				int intervalMax = p->intervalMax;
 				long size = p->size;
 				unsigned char *fichier = p->fichier;
-				fichier = malloc(size*sizeof(unsigned char));
 				int m = p->m;
 				int f = p->f;
 
@@ -73,13 +72,16 @@ void *thread(void *para) {
 				printf("id: %i\n", id);
 				printf("Intervalle min: %d\n", intervalMin);
 				printf("Intervalle max: %d\n", intervalMax);
+				printf("\n");
 
 				for (int j = intervalMin; j < intervalMax; j++) { // On parcours l'image sur la hauteur
 					for (int i = intervalMin; i < intervalMax; i++) { // On parcours l'image dans sa largeur
 						pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
-							ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
+						ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
 					}
 				}
+				
+		free(fichier);
 
         printf("Hello from thread %d\n", id);
         return NULL;
@@ -219,12 +221,10 @@ int main(int argc, char **argv) {
 				count_thread++;
 		}
 
-		for (int i = 0; i < count_thread; i++)
+	for (int i = 0; i < count_thread; i++)
     {
         pthread_join(threads[i], NULL);
     }
-
-
 
 	// On parcours toute l'image et applique la fonction ecritureRGB
 	// for (int j = 0; j < img->height && end != true; j++) { // On parcours l'image sur la hauteur
