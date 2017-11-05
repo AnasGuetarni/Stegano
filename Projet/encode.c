@@ -67,12 +67,12 @@ void *thread(void *para) {
 				int m = p->m;
 				int f = p->f;
 
-				printf("size : %ld\n", size);
-				printf("fichier: %s\n", fichier);
-				printf("id: %i\n", id);
-				printf("Intervalle min: %d\n", intervalMin);
-				printf("Intervalle max: %d\n", intervalMax);
-				printf("\n");
+				// printf("size : %ld\n", size);
+				// printf("fichier: %s\n", fichier);
+				 printf("id: %i\n", id);
+				// printf("Intervalle min: %d\n", intervalMin);
+				// printf("Intervalle max: %d\n", intervalMax);
+				// printf("\n");
 
 				for (int j = intervalMin; j < intervalMax; j++) { // On parcours l'image sur la hauteur
 					for (int i = intervalMin; i < intervalMax; i++) { // On parcours l'image dans sa largeur
@@ -80,7 +80,7 @@ void *thread(void *para) {
 						ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
 					}
 				}
-				
+
 		free(fichier);
 
         printf("Hello from thread %d\n", id);
