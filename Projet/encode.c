@@ -64,9 +64,13 @@ void *thread(void *para) {
 				int intervalMax = p->intervalMax;
 				long size = p->size;
 				unsigned char *fichier = p->fichier;
+				fichier = malloc(size*sizeof(unsigned char));
 				int m = p->m;
 				int f = p->f;
 
+				printf("size : %ld\n", size);
+				printf("fichier: %s\n", fichier);
+				printf("id: %i\n", id);
 				printf("Intervalle min: %d\n", intervalMin);
 				printf("Intervalle max: %d\n", intervalMax);
 
@@ -191,47 +195,34 @@ int main(int argc, char **argv) {
 
 		threads_param[count_thread].fichier = fichier;
 		threads_param[count_thread].size = size;
+		threads_param[count_thread].img = img;
 
 		for (int o = 0; o < NUM_THREADS; o++)
 		{
 				threads_param[count_thread].thread_id = o;
 				threads_param[count_thread].intervalMin = intervalleT.intervalMin[o];
 				threads_param[count_thread].intervalMax = intervalleT.intervalMax[o];
-				threads_param[count_thread].img = img;
 				threads_param[count_thread].m = m;
 				threads_param[count_thread].f = f;
 
+				printf("Good initialisaiton\n");
+
 				int code = pthread_create(&threads[count_thread], NULL, thread, &threads_param[count_thread]);
+
+				printf("Code : %i\n", code);
 
 				if (code != 0){
 		            fprintf(stderr, "pthread_create failed!\n");
 		            exit(0);
 				}
 
-			if(pthread_join(threads[count_thread], NULL) != 0) {
-				 printf("pthread_join\n");
-				 return EXIT_FAILURE;
-			}
-
-			// for (int j = intervalleT.intervalMin[o]; j < intervalleT.intervalMax[o] && end != true; j++) { // On parcours l'image sur la hauteur
-			// 	for (int i = intervalleT.intervalMin[o]; i < intervalleT.intervalMax[o] && end != true; i++) { // On parcours l'image dans sa largeur
-			// 		pixel_t *p = &img->pix[j][i]; //On place dans une structure les valeurs des pixels
-			// 		//printf("%hhu\n", p->r);
-			// 		if (m != old)
-			// 		{
-			// 			old = m;
-			// 			// printf("r: %s\n", &p->r);
-			// 			ecritureRGB(fichier, &p->r,&p->g,&p->b,&m,&f,size); // On écrit l'encodage sur le fichier en question
-			// 		}
-			// 		else
-			// 		{
-			// 			end = true;
-			// 		}
-			// 	}
-			// }
-			count_thread++;
+				count_thread++;
 		}
 
+		for (int i = 0; i < count_thread; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
 
 
 
